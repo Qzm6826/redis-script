@@ -18,34 +18,27 @@ function checkParams($params)
 }
 
 if (checkParams(Config::$HKeys) ){
-    $hCount = 60;
-    for($i = 0; $i < $hCount; $i++){
-        foreach (Config::$HKeys as $val) {
-            if(!$class->processHash($val)){
-                continue;
-            }else{
-                break;
-            }
+    foreach (Config::$HKeys as $val) {
+        $class->iterator = null;
+        if(!$class->processHash($val)){
+            continue;
+        }else{
+            break;
         }
-        $hCount--;
-        sleep(1);
     }
 }
 
 if (checkParams(Config::$Keys)){
-    $sCount = 60;
-    for ($i = 0; $i < $sCount; $i++) {
-        foreach (Config::$Keys as $val) {
-            if(!$class->processKey($val)){
-                continue;
-            }else{
-                break;
-            }
+    foreach (Config::$Keys as $val) {
+        $class->iterator = null;
+        if(!$class->processKey($val)){
+            continue;
+        }else{
+            break;
         }
-        $sCount--;
-        sleep(1);
     }
 }
+
 
 $class->close();
 

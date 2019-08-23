@@ -5,7 +5,7 @@ namespace App;
 class Init{
 
     private $redis = null;
-    private $iterator = null;
+    public $iterator = null;
     private $host = null;
     private $pwd = null;
     private $db = 0;
@@ -38,19 +38,41 @@ class Init{
         return $this->redis->type($key);
     }
 
+    public function getKeyLength($key, $type = "hash")
+    {
+        $keyLen = 0;
+        if ($type == "hash"){
+            $keyLen = $this->redis->hLen($key);
+        }elseif ($type == "str"){
+            $keyLen = $this->redis->strlen($key);
+        }
+        return $keyLen;
+    }
+
     public function getHashData($hKey)
     {
-        if ($this->redis->hLen($hKey) == 0){
-            return false;
+        $count = 0;
+        $data = array();
+        while ($array = $this->redis->hScan($hKey, $this->iterator, "*", 6500)){
+            if ($count >= 60 || !$array) {
+                break;
+            }
+            $data = array_merge($data, array_keys($array));
         }
-        $this->iterator = null;
-        return $this->redis->hScan($hKey, $this->iterator, "*", 6500);
+        return $data;
     }
 
     public function getRedisData($key)
     {
-        $this->iterator = null;
-        return $this->redis->scan($this->iterator, $key . "*", 6500);
+        $count = 0;
+        $data = array();
+        while ($array = $this->redis->scan($this->iterator, $key . "*", 6500)){
+            if ($count >= 60 || !$array) {
+                break;
+            }
+            $data = array_merge($data, $array);
+        }
+        return $data;
     }
 
     public function hDel($key, $hKeys)

@@ -6,6 +6,9 @@ class Index extends Init {
 
     public function processHash($key)
     {
+        if ($this->getKeyLength($key) == 0){
+            return false;
+        }
         $data = $this->getHashData($key);
         if (empty($data)){
             return false;
@@ -28,7 +31,9 @@ class Index extends Init {
                 $strKeys []= $val;
             }
             if ($type == 5) {
+                $this->iterator = null;
                 $this->processHash($val);
+                Log::warn("[hash]--keys:{$val}");
             }
             continue;
         }
