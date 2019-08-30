@@ -58,6 +58,7 @@ class Init{
                 break;
             }
             $data = array_merge($data, array_keys($array));
+            $count++;
         }
         return $data;
     }
@@ -71,6 +72,7 @@ class Init{
                 break;
             }
             $data = array_merge($data, $array);
+            $count++;
         }
         return $data;
     }
