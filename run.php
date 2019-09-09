@@ -39,7 +39,6 @@ if (checkParams(Config::$Keys)){
     }
 }
 
-
 $class->close();
 
 exit();

@@ -4,7 +4,7 @@ namespace App;
 
 class Init{
 
-    private $redis = null;
+    public $redis = null;
     public $iterator = null;
     private $host = null;
     private $pwd = null;
@@ -49,7 +49,7 @@ class Init{
         return $keyLen;
     }
 
-    public function getHashData($hKey)
+    public function processHashData($hKey)
     {
         $count = 0;
         $data = array();
@@ -57,13 +57,14 @@ class Init{
             if ($count >= 60 || !$array) {
                 break;
             }
-            $data = array_merge($data, array_keys($array));
+            $this->hDel($hKey, array_keys($array));
             $count++;
+            sleep(2);
         }
         return $data;
     }
 
-    public function getRedisData($key)
+    public function processRedisData($key)
     {
         $count = 0;
         $data = array();
@@ -71,14 +72,18 @@ class Init{
             if ($count >= 60 || !$array) {
                 break;
             }
-            $data = array_merge($data, $array);
+            $this->del($array, $key);
             $count++;
+            sleep(2);
         }
         return $data;
     }
 
     public function hDel($key, $hKeys)
     {
+        if (count($hKeys) > 6500){
+            $hKeys = array_slice($hKeys, 0, 6500);
+        }
         $hKeys = implode(" ", $hKeys);
         $cmd = "cd " . __DIR__ . "/Script/ && sh ./hashScp.sh {$this->host} {$this->pwd} {$this->db} {$key} '{$hKeys}'";
         $num = system($cmd);
@@ -88,12 +93,35 @@ class Init{
 
     public function del($keys, $k)
     {
-        $keys = implode(" ", $keys);
+        if(!$data = $this->getStrData($keys)){
+            return false;
+        }
+        $keys = implode(" ", $data);
         $cmd = "cd " . __DIR__ . "/Script/ && sh ./strScp.sh {$this->host} {$this->pwd} {$this->db} '{$keys}'";
         $num = system($cmd);
         Log::debug("[string][{$k}*]受影响条数: {$num}[success]");
         return true;
     }
+
+    public function getStrData($strKeys)
+    {
+        $data = array();
+        foreach ($strKeys as $val){
+            $type = $this->getType($val);     //int 1 string or int 5 hash
+            if ($type == 1) {
+                $data []= $val;
+            }
+            if ($type == 5) {
+                Log::warn("[hash]--keys:{$val}");
+            }
+            continue;
+        }
+        if (empty($data)) {
+            return false;
+        }
+        return $data;
+    }
+
 
     public function close()
     {
